@@ -4,6 +4,11 @@ umask 022
 shopt -s nullglob
 set -ex
 
+#sanity check:
+
+[ -z "$OVN_K8S_NODE_NAME" ] && exit 1
+[ -z "$OVN_K8S_API_SERVER" ] && exit 2
+
 BIN=ovn-k8s-cni-overlay
 CONF=/etc/ovn-cni.conf
 
@@ -26,15 +31,22 @@ pip install $SRC
 deactivate
 
 #install cni wapper
-TB=$(mktemp -p $CNI_BIN_DIR $CNI_BIN.XXXXXX)
+TB=$TV/bin/wrapper
+touch $TB
 chmod +x $TB
 
 cat > $TB << EOF
 #!/bin/bash
 source $TV/bin/activate
-ovn-k8s-cni-overlay "\$@"
+"$TV/bin/\$(basename "\$0")" "\$@"
 EOF
-mv $TB $CNI_BIN_DIR/$CNI_BIN
+ln -snf $TB $CNI_BIN_DIR/$CNI_BIN
+
+# /kubeapi-get.bash "api/v1/nodes/$OVN_K8S_NODE_NAME" | jq -e '.metadata.annotations["ovn-kube-node-subnet"]'
+
+while true; do
+sleep 1d
+done
 
 #install cni config
 TF=$(mktemp -p $CNI_CONF_DIR $CNI_CONF.XXXXXX)

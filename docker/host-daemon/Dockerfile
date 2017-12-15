@@ -6,7 +6,7 @@ USER root
 
 RUN tdnf install --refresh -y -q python-pip python-virtualenv git jq
 
-COPY entrypoint.bash install-cni.bash /
+COPY entrypoint.bash install-cni.bash kubeapi-get.bash /
 COPY ovn-cni.conf /etc/
 RUN mkdir -p /usr/src/ovn-kubernetes && cd /usr/src/ovn-kubernetes && git clone https://github.com/openvswitch/ovn-kubernetes .
 #ADD ovn-kube.tar /usr/src/ovn-kubernetes/

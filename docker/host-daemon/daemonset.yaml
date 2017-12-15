@@ -1,3 +1,13 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: ovn-kube-config
+  namespace: kube-system
+data:
+  k8s_api_server: "https://172.16.0.156:6443"
+
+---
+
 kind: DaemonSet
 apiVersion: extensions/v1beta1
 metadata:
@@ -18,10 +28,21 @@ spec:
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
+      serviceAccountName: ovn-kube-service-account
       containers:
       - name: install-cni
         image: ovnkube-host-daemon
         imagePullPolicy: Never
+        env:
+        - name: OVN_K8S_API_SERVER
+          valueFrom:
+            configMapKeyRef:
+              name: ovn-kube-config
+              key: k8s_api_server
+        - name: OVN_K8S_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
         command: ["/install-cni.bash"]
         volumeMounts:
           - mountPath: /host/opt/cni/bin
@@ -40,3 +61,42 @@ spec:
       - name: ovn-kube-venv
         hostPath:
           path: /opt/ovn-kubernetes
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: ovn-kube-crb
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: ovn-kube-service-account
+  namespace: kube-system
+
+---
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: ovn-kube-cluster-role
+rules:
+  - apiGroups: [""]
+    resources:
+      - pods
+      - nodes
+    verbs:
+      - get
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ovn-kube-service-account
+  namespace: kube-system
+
+---
