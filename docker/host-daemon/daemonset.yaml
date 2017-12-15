@@ -1,0 +1,42 @@
+kind: DaemonSet
+apiVersion: extensions/v1beta1
+metadata:
+  name: ovn-kube-node
+  namespace: kube-system
+  labels:
+    k8s-app: ovn-kube-node
+spec:
+  selector:
+    matchLabels:
+      name: ovn-kube-node
+  template:
+    metadata:
+      labels:
+        name: ovn-kube-node
+    spec:
+      hostNetwork: true
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      containers:
+      - name: install-cni
+        image: ovnkube-host-daemon
+        imagePullPolicy: Never
+        command: ["/install-cni.bash"]
+        volumeMounts:
+          - mountPath: /host/opt/cni/bin
+            name: cni-bin-dir
+          - mountPath: /host/etc/cni/net.d
+            name: cni-conf-dir
+          - mountPath: /opt/ovn-kubernetes
+            name: ovn-kube-venv
+      volumes:
+      - name: cni-bin-dir
+        hostPath:
+          path: /opt/cni/bin
+      - name: cni-conf-dir
+        hostPath:
+          path: /etc/cni/net.d
+      - name: ovn-kube-venv
+        hostPath:
+          path: /opt/ovn-kubernetes

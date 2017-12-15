@@ -1,15 +1,14 @@
-FROM ubuntu:16.04
+FROM vmware/photon:2.0
 
 MAINTAINER Bo Gan <ganb@vmware.com>
 
 USER root
 
-RUN apt-get update && apt-get install -y git python-pip && apt-get clean
+RUN tdnf install --refresh -y -q python-pip python-virtualenv git jq
 
-ARG CACHEBUST=1
-
-RUN pip install git+https://github.com/ganboing/ovn-kubernetes
-
-COPY entrypoint.bash /entrypoint.bash
+COPY entrypoint.bash install-cni.bash /
+COPY ovn-cni.conf /etc/
+RUN mkdir -p /usr/src/ovn-kubernetes && cd /usr/src/ovn-kubernetes && git clone https://github.com/openvswitch/ovn-kubernetes .
+#ADD ovn-kube.tar /usr/src/ovn-kubernetes/
 
 ENTRYPOINT /entrypoint.bash
