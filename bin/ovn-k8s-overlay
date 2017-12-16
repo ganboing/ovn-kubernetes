@@ -278,18 +278,18 @@ def configure_management_port(node_name, cluster_subnet, router_ip,
                               interface_name, interface_ip):
     # First, try to configure management ports via platform specific tools.
 
-    if sys.platform == 'win32':
-        configure_management_port_windows(node_name, cluster_subnet, router_ip,
-                                          interface_name, interface_ip)
-        return
+    #if sys.platform == 'win32':
+    #    configure_management_port_windows(node_name, cluster_subnet, router_ip,
+    #                                      interface_name, interface_ip)
+    #    return
 
     # Identify whether the platform is Debian based.
-    if os.path.isfile("/etc/network/interfaces"):
-        configure_management_port_debian(node_name, cluster_subnet, router_ip,
+    #if os.path.isfile("/etc/network/interfaces"):
+    #    configure_management_port_debian(node_name, cluster_subnet, router_ip,
                                          interface_name, interface_ip)
 
-    if os.path.isfile("/etc/sysconfig/network-scripts/ifup-ovs"):
-        configure_management_port_redhat(node_name, cluster_subnet, router_ip,
+    #if os.path.isfile("/etc/sysconfig/network-scripts/ifup-ovs"):
+    #    configure_management_port_redhat(node_name, cluster_subnet, router_ip,
                                          interface_name, interface_ip)
 
     # Up the interface.
