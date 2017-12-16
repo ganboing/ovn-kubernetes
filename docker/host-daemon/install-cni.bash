@@ -8,6 +8,7 @@ set -ex
 
 [ -z "$OVN_K8S_NODE_NAME" ] && exit 1
 [ -z "$OVN_K8S_API_SERVER" ] && exit 2
+[ -z "$OVN_K8S_CLUSTER_CIDR" ] && exit 2
 
 BIN=ovn-k8s-cni-overlay
 CONF=/etc/ovn-cni.conf
@@ -41,6 +42,7 @@ source $TV/bin/activate
 "$TV/bin/\$(basename "\$0")" "\$@"
 EOF
 ln -snf $TB $CNI_BIN_DIR/$CNI_BIN
+ln -snf $TB /bin/ovn-k8s-overlay
 
 # /kubeapi-get.bash "api/v1/nodes/$OVN_K8S_NODE_NAME" | jq -e '.metadata.annotations["ovn-kube-node-subnet"]'
 

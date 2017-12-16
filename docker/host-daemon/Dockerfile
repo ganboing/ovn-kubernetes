@@ -4,7 +4,7 @@ MAINTAINER Bo Gan <ganb@vmware.com>
 
 USER root
 
-RUN tdnf install --refresh -y -q python-pip python-virtualenv git jq
+RUN tdnf install --refresh -y -q python-pip python-virtualenv openvswitch ovn-common git jq iproute2
 
 COPY entrypoint.bash install-cni.bash kubeapi-get.bash /
 COPY ovn-cni.conf /etc/
