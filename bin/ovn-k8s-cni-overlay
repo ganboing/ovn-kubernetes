@@ -128,7 +128,7 @@ def cni_add(cni_ifname, cni_netns, namespace, pod_name, container_id):
     if not k8s_api_server:
         raise OVNCNIException(100, "failed to get K8S_API_SERVER")
     if not k8s_api_server.startswith("http"):
-        k8s_api_server = "http://%s" % k8s_api_server
+        k8s_api_server = "https://%s" % k8s_api_server
 
     # Get the IP address and MAC address from the API server.
     # Wait for a maximum of 3 seconds with a retry every 0.1 second.

@@ -33,6 +33,8 @@ def _get_api_params():
     if not variables.K8S_API_SERVER:
         k8s_api_server = ovs_vsctl("--if-exists", "get", "Open_vSwitch", ".",
                                    "external_ids:k8s-api-server").strip('"')
+        if not k8s_api_server.startswith("https"):
+            k8s_api_server = "https://%s" % k8s_api_server
     else:
         k8s_api_server = variables.K8S_API_SERVER
 

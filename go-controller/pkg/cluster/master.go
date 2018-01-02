@@ -107,15 +107,6 @@ func setDBServerAuth(ctlCmd, desc string, auth *OvnDBAuth) error {
 
 // SetupMaster calls the external script to create the switch and central routers for the network
 func (cluster *OvnClusterController) SetupMaster(masterNodeName string, masterSwitchNetwork string) error {
-	err := util.StartOVS()
-	if err != nil {
-		return err
-	}
-
-	err = util.StartOvnNorthd()
-	if err != nil {
-		return err
-	}
 
 	kubeURL, err := url.Parse(cluster.KubeServer)
 	if err != nil {
@@ -150,10 +141,13 @@ func (cluster *OvnClusterController) SetupMaster(masterNodeName string, masterSw
 	if cluster.NorthDBClientAuth.scheme != OvnDBSchemeUnix {
 		args = append(args, fmt.Sprintf("external_ids:ovn-nb=\"%s\"", cluster.NorthDBClientAuth.GetURL()))
 	}
+<<<<<<< HEAD
 	if cluster.SouthDBClientAuth.scheme != OvnDBSchemeUnix {
 		args = append(args, fmt.Sprintf("external_ids:ovn-remote=\"%s\"", cluster.SouthDBClientAuth.GetURL()))
 	}
 
+=======
+>>>>>>> patch code
 	out, err := exec.Command("ovs-vsctl", args...).CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("Error setting OVS external IDs: %v\n  %q", err, string(out))
