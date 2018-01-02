@@ -8,7 +8,7 @@ ENV PYTHONDONTWRITEBYTECODE yes
 
 RUN tdnf install --refresh -y -q python-pip python-virtualenv openvswitch ovn-common git jq iproute2 strace && tdnf clean all
 
-COPY entrypoint.bash install-cni.bash kubeapi-get.bash common-api.bash /root/
+COPY entrypoint.bash install-cni.bash kubeapi-get.bash common-api.bash go-watcher.bash /root/
 COPY ovn-cni.conf /etc/
 #RUN mkdir -p /usr/src/ovn-kubernetes
 #cd /usr/src/ovn-kubernetes && git clone --depth=1 https://github.com/openvswitch/ovn-kubernetes .
@@ -21,4 +21,4 @@ RUN pip download -d /wheelhouse -f /wheelhouse ovn-kubernetes
 ADD ovn-go.tar.gz /opt/ovn-go-kube/
 
 WORKDIR /root
-ENTRYPOINT /entrypoint.bash
+ENTRYPOINT /root/entrypoint.bash

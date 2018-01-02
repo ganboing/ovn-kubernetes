@@ -9,19 +9,23 @@ source "$(dirname "${BASH_SOURCE[0]}")/common-api.bash"
 #fail early while racing with watcher
 NODE_SUBNET=$(get_node_subnet)
 
-BIN=ovn-k8s-cni-overlay
-CONF=/etc/ovn-cni.conf
+BIN_NAME=ovn-k8s-cni-overlay
+CONF_NAME=10-net.conf
+CONF_TEMPLATE=/etc/ovn-cni.conf
 
-CNI_BIN_DIR=/host/opt/cni/bin
-CNI_CONF_DIR=/host/etc/cni/net.d
+HOST_BIN_DIR=/host/opt/cni/bin
+HOST_CONF_DIR=/host/etc/cni/net.d
+HOST_OVS_CONF_DIR=/host/etc/openvswitch
+
+#identical mount
 OVN_V=/opt/ovn-kubernetes
-SRC=/usr/src/ovn-kubernetes
-
-CNI_BIN=ovn_cni
-CNI_CONF=10-net.conf
 
 #remove old files
-rm -rf $OVN_V/* $CNI_BIN_DIR/$CNI_BIN $CNI_CONF_DIR/$CNI_CONF
+rm -rf $OVN_V/* $HOST_BIN_DIR/$BIN_NAME $HOST_CONF_DIR/$CONF_NAME
+
+#install apiserver ca cert
+CACERT="$(get_ca_cert_path)"
+cp -f "$CACERT" "$HOST_OVS_CONF_DIR/k8s-ca.crt"
 
 #install virtualenv
 TV=$(mktemp -dp $OVN_V venv-XXXXXX)
@@ -41,14 +45,13 @@ cat > $TB << EOF
 source $TV/bin/activate
 "$TV/bin/\$(basename "\$0")" "\$@"
 EOF
-ln -snf $TB $CNI_BIN_DIR/$CNI_BIN
-ln -snf $TB /bin/ovn-k8s-overlay
+ln -snf $TB $HOST_BIN_DIR/$BIN_NAME
 
 #install cni config
-TF=$(mktemp -p $CNI_CONF_DIR $CNI_CONF.XXXXXX)
-cat $CONF | jq '.ipam.subnet = "'$NODE_SUBNET'"' > $TF
+TF=$(mktemp -p $HOST_CONF_DIR $CONF_NAME.XXXXXX)
+cat $CONF_TEMPLATE | jq '.ipam.subnet = "'$NODE_SUBNET'"' > $TF
 #Using mv to atomic operation
-mv $TF $CNI_CONF_DIR/$CNI_CONF
+mv $TF $HOST_CONF_DIR/$CONF_NAME
 
 while true; do
 sleep 1d

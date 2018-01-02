@@ -73,6 +73,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
+        command: ["/root/go-watcher.bash"]
         volumeMounts:
           - mountPath: /var/run/openvswitch
             name: openvswitch
@@ -126,7 +127,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        command: ["/install-cni.bash"]
+        command: ["/root/install-cni.bash"]
         volumeMounts:
           - mountPath: /host/opt/cni/bin
             name: cni-bin-dir
@@ -134,8 +135,10 @@ spec:
             name: cni-conf-dir
           - mountPath: /opt/ovn-kubernetes
             name: ovn-kube-venv
+          - mountPath: /host/etc/openvswitch
+            name: ovs-conf
           - mountPath: /var/run/openvswitch
-            name: openvswitch
+            name: ovs-run
       volumes:
       - name: cni-bin-dir
         hostPath:
@@ -146,7 +149,10 @@ spec:
       - name: ovn-kube-venv
         hostPath:
           path: /opt/ovn-kubernetes
-      - name: openvswitch
+      - name: ovs-conf
+        hostPath:
+          path: /etc/openvswitch
+      - name: ovs-run
         hostPath:
           path: /var/run/openvswitch
 
