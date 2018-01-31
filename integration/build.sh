@@ -7,10 +7,10 @@ cd "$(dirname "$0")"
 G="$(git rev-parse --show-toplevel)"
 K="$G/docker/host-daemon"
 
-pushd "$G"
-rm -rf dist
-python2 setup.py sdist
-popd
+#pushd "$G"
+#rm -rf dist
+#python2 setup.py sdist
+#popd
 
 D=( $G/dist/* )
 [ ${#D[@]} -eq 1 ] || exit 1

@@ -1,0 +1,102 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: ovnkube-config
+  namespace: kube-system
+data:
+  #cluster cidr
+  k8s_cluster_cidr: "192.168.0.0/16"
+
+---
+
+kind: DaemonSet
+apiVersion: extensions/v1beta1
+metadata:
+  name: ovnkube-watcher
+  namespace: kube-system
+  labels:
+    k8s-app: ovnkube-watcher
+spec:
+  selector:
+    matchLabels:
+      name: ovnkube-watcher
+  template:
+    metadata:
+      labels:
+        name: ovnkube-watcher
+    spec:
+      hostNetwork: true
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      serviceAccountName: ovn-kube-service-account
+      nodeSelector:
+        kubernetes.io/role: "master"
+      containers:
+      - name: watcher
+        image: ganboing/ovnkube:latest
+        securityContext:
+          capabilities:
+            add: ["NET_ADMIN"]
+        env:
+        - name: OVN_K8S_CLUSTER_CIDR
+          valueFrom:
+            configMapKeyRef:
+              name: ovnkube-config
+              key: k8s_cluster_cidr
+        - name: OVN_K8S_NODE_NAME0
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        command: ["/root/go-watcher.bash"]
+        volumeMounts:
+          - mountPath: /var/run/openvswitch
+            name: ovs-run
+          - mountPath: /dev/log
+            name: syslog
+      volumes:
+      - name: ovs-run
+        hostPath:
+          path: /var/run/openvswitch
+      - name: syslog
+        hostPath:
+          path: /dev/log
+          type: Socket
+---
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: ovnkube-watcher-crb
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ovnkube-watcher-cr
+subjects:
+- kind: ServiceAccount
+  name: ovnkube-watcher-sa
+  namespace: kube-system
+
+---
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: ovnkube-watcher-cr
+rules:
+  - apiGroups: [""]
+    resources:
+      - pods
+      - nodes
+    verbs:
+      - get
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ovnkube-watcher-sa
+  namespace: kube-system
+
+---

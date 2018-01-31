@@ -1,0 +1,73 @@
+kind: DaemonSet
+apiVersion: extensions/v1beta1
+metadata:
+  name: ovn-kube-test
+  namespace: kube-system
+  labels:
+    k8s-app: ovn-kube-test
+spec:
+  selector:
+    matchLabels:
+      name: ovn-kube-test
+  template:
+    metadata:
+      labels:
+        name: ovn-kube-test
+    spec:
+      hostNetwork: true
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      serviceAccountName: ovnkube-sa
+      containers:
+      - name: test
+        image: ganboing/ovnkube:latest
+        command: ["/root/entrypoint.bash"]
+        volumeMounts:
+          - mountPath: /var/lib/kubelet
+            name: kubelet
+        env:
+        - name: OVN_K8S_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+      volumes:
+      - name: kubelet
+        hostPath:
+          path: /var/lib/kubelet
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: ovn-kube-crb
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ovnkube-cr
+subjects:
+- kind: ServiceAccount
+  name: ovnkube-sa
+  namespace: kube-system
+
+---
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: ovnkube-cr
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "patch"]
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ovnkube-sa
+  namespace: kube-system
+
+---
