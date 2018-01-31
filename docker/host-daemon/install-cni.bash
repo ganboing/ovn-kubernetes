@@ -7,7 +7,7 @@ set -ex
 source "$(dirname "${BASH_SOURCE[0]}")/common-api.bash"
 
 #fail early while racing with watcher
-NODE_SUBNET=$(get_node_subnet)
+NODE_SUBNET=$(get_self_subnet)
 
 BIN_NAME=ovn-k8s-cni-overlay
 CONF_NAME=10-net.conf
@@ -53,6 +53,7 @@ cat $CONF_TEMPLATE | jq '.ipam.subnet = "'$NODE_SUBNET'"' > $TF
 #Using mv to atomic operation
 mv $TF $HOST_CONF_DIR/$CONF_NAME
 
-while true; do
-sleep 1d
-done
+trap "{ rm -rf $OVN_V/* $HOST_BIN_DIR/$BIN_NAME $HOST_CONF_DIR/$CONF_NAME; }" EXIT
+tail -f /dev/null
+
+exit 1

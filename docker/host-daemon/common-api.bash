@@ -1,21 +1,12 @@
 #!/bin/bash
 
-#[ -z "$OVN_K8S_API_SERVER" ] && exit 2
+[[ ${__GUARD_VAR_COMMON_API} -eq 1 ]] && return || readonly __GUARD_VAR_COMMON_API=1
 
-KUBE_SECRETS_DIR=/var/run/secrets/kubernetes.io/serviceaccount
-API_GETTER="$(dirname "${BASH_SOURCE[0]}")/kubeapi-get.bash"
+OVN_K8S_NODE_NAME="${OVN_K8S_NODE_NAME:-"$HOSTNAME"}"
 
-get_ca_cert_path(){
-  [ -a "$KUBE_SECRETS_DIR/ca.crt" ] || return 1
-  echo "$KUBE_SECRETS_DIR/ca.crt"
-}
+source "$(dirname "${BASH_SOURCE[0]}")/kubeapi.bash"
 
-get_token(){
-  set -e
-  cat "$KUBE_SECRETS_DIR/token"
-}
-
-get_node_name(){
+get_self_name(){
   [ -z "$OVN_K8S_NODE_NAME" ] && return 1
   echo "$OVN_K8S_NODE_NAME"
 }
@@ -25,34 +16,28 @@ get_cluster_cidr(){
   echo "$OVN_K8S_CLUSTER_CIDR"
 }
 
-get_api_server(){
-  [ -z "$OVN_K8S_API_SERVER" ] && return 1
-  echo "$OVN_K8S_API_SERVER"
-}
-
-get_node_subnet(){
-  set -e
-  local N
-  #fail early
-  N="$(get_node_name)"
+get_self_subnet(){
   local S
   #jq will return 0 on a empty input
-  S="$( "$API_GETTER" "api/v1/nodes/$N" | jq -er '.metadata.annotations["ovn_host_subnet"]')"
+  S="$( kube_api_get_node "$OVN_K8S_NODE_NAME" | jq -er '.metadata.annotations["ovn_host_subnet"]')"
   [ -z "$S" ] && return 3
-  echo $S
+  echo "$S"
 }
 
-get_node_role() {
-  set -e
-  local N
-  #fail early
-  N="$(get_node_name)"
+get_node_internal_ip(){
+  local S
+  S="$(kube_api_get_node "$1" | jq -er '.status.addresses[] | select(.type == "InternalIP") | .address')"
+  [ -z "$S" ] && return 4
+  echo "$S"
+}
+
+get_self_internal_ip(){
+  get_node_internal_ip "$OVN_K8S_NODE_NAME"
+}
+
+get_self_role() {
   local L
-  L="$( "$API_GETTER" "api/v1/nodes/$N" | jq -e '.metadata.labels')"
-  [ -z "$L" ] && return 4
-  if echo "$L" | jq -e '."node-role.kubernetes.io/master"' > /dev/null; then
-    echo MASTER
-  else
-    echo WORKER
-  fi
+  L="$( kube_api_get_node "$OVN_K8S_NODE_NAME" | jq -e '.metadata.labels')"
+  [ -z "$L" ] && return 5
+  echo "$L" | jq -er '."kubernetes.io/role"'
 }
