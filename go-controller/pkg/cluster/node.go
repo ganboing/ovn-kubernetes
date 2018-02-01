@@ -3,14 +3,14 @@ package cluster
 import (
 	"fmt"
 	"net"
-	"os"
+	//"os"
 	"os/exec"
-	"runtime"
+	//"runtime"
 	"syscall"
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/openshift/origin/pkg/util/netutils"
+	//"github.com/openshift/origin/pkg/util/netutils"
 	"github.com/vishvananda/netlink"
 
 	"github.com/openvswitch/ovn-kubernetes/go-controller/pkg/config"
@@ -59,11 +59,11 @@ func (cluster *OvnClusterController) StartClusterNode(name string) error {
 		return err
 	}
 
-	nodeIP, err := netutils.GetNodeIP(node.Name)
+	/*nodeIP, err := netutils.GetNodeIP(node.Name)
 	if err != nil {
 		logrus.Errorf("Failed to obtain node's IP: %v", err)
 		return err
-	}
+	}*/
 
 	logrus.Infof("Node %s ready for ovn initialization with subnet %s", node.Name, subnet.String())
 
@@ -76,10 +76,6 @@ func (cluster *OvnClusterController) StartClusterNode(name string) error {
 		"set",
 		"Open_vSwitch",
 		".",
-		fmt.Sprintf("external_ids:ovn-nb=\"%s\"", cluster.NorthDBClientAuth.GetURL()),
-		fmt.Sprintf("external_ids:ovn-remote=\"%s\"", cluster.SouthDBClientAuth.GetURL()),
-		fmt.Sprintf("external_ids:ovn-encap-ip=%s", nodeIP),
-		"external_ids:ovn-encap-type=\"geneve\"",
 		fmt.Sprintf("external_ids:k8s-api-server=\"%s\"", cluster.KubeServer),
 		fmt.Sprintf("external_ids:k8s-api-token=\"%s\"", cluster.Token),
 	}
@@ -112,7 +108,7 @@ func (cluster *OvnClusterController) StartClusterNode(name string) error {
 	}
 
 	// Install the CNI config file after all initialization is done
-	if runtime.GOOS != "win32" {
+	/*if runtime.GOOS != "win32" {
 		// MkdirAll() returns no error if the path already exists
 		err = os.MkdirAll(config.CniConfPath, os.ModeDir)
 		if err != nil {
@@ -133,7 +129,7 @@ func (cluster *OvnClusterController) StartClusterNode(name string) error {
 		if err != nil {
 			return err
 		}
-	}
+	}*/
 
 	return nil
 }
