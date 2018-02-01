@@ -18,7 +18,7 @@ RUN tdnf install --refresh -y -q PyYAML openvswitch ovn-common ovn-host ovn-cent
 #RUN mkdir -p /wheelhouse && pip download -d /wheelhouse --no-cache-dir /usr/src/ovn-kubernetes
 ADD ovn-go.tar.gz /opt/ovn-go-kube/
 
-COPY entrypoint.bash install-cni.bash kubeapi.bash common-api.bash go-watcher.bash go-init-node.bash ovsdb.bash ovs-vswitchd.bash ovn-controller.bash ovs-common.inc ovnnb-db.bash ovnsb-db.bash ovn-northd.bash ovn-central-common.inc /root/
+COPY entrypoint.bash install-cni.bash kubeapi.bash common-api.bash go-init-master.bash go-init-node.bash ovsdb.bash ovs-vswitchd.bash ovn-controller.bash ovs-common.inc ovnnb-db.bash ovnsb-db.bash ovn-northd.bash ovn-central-common.inc /root/
 COPY ovn-cni.conf /etc/
 
 WORKDIR /root
