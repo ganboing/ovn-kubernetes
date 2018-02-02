@@ -25,10 +25,13 @@ get_self_subnet(){
 }
 
 get_node_internal_ip(){
-  local S
-  S="$(kube_api_get_node "$1" | jq -er '.status.addresses[] | select(.type == "InternalIP") | .address')"
-  [ -z "$S" ] && return 4
-  echo "$S"
+  local D
+  D="$(kube_api_get_node "$1" | jq -er '.status.addresses[] | select(.type == "InternalDNS") | .address')"
+  [ -z "$D" ] && return 4
+  local P
+  P="$(dig +short "$D")"
+  [ -z "$P" ] && return 4
+  echo "$P"
 }
 
 get_self_internal_ip(){
@@ -40,4 +43,11 @@ get_self_role() {
   L="$( kube_api_get_node "$OVN_K8S_NODE_NAME" | jq -e '.metadata.labels')"
   [ -z "$L" ] && return 5
   echo "$L" | jq -er '."kubernetes.io/role"'
+}
+
+get_self_system_uuid() {
+  local I
+  I="$( kube_api_get_node "$OVN_K8S_NODE_NAME" | jq -er '.status.nodeInfo.systemUUID')"
+  [ -z "$I" ] && return 6
+  echo "${I,,}"
 }

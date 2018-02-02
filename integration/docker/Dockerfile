@@ -6,7 +6,7 @@ USER root
 
 ENV PYTHONDONTWRITEBYTECODE yes
 
-RUN tdnf install --refresh -y -q PyYAML openvswitch ovn-common ovn-host ovn-central git jq iproute2 strace && tdnf clean all
+RUN tdnf install --refresh -y -q PyYAML bindutils openvswitch ovn-common ovn-host ovn-central git jq iproute2 strace && tdnf clean all
 
 #RUN mkdir -p /usr/src/ovn-kubernetes
 #cd /usr/src/ovn-kubernetes && git clone --depth=1 https://github.com/openvswitch/ovn-kubernetes .
@@ -18,8 +18,7 @@ RUN tdnf install --refresh -y -q PyYAML openvswitch ovn-common ovn-host ovn-cent
 #RUN mkdir -p /wheelhouse && pip download -d /wheelhouse --no-cache-dir /usr/src/ovn-kubernetes
 ADD ovn-go.tar.gz /opt/ovn-go-kube/
 
-COPY entrypoint.bash install-cni.bash kubeapi.bash common-api.bash go-init-master.bash go-init-node.bash ovsdb.bash ovs-vswitchd.bash ovn-controller.bash ovs-common.inc ovnnb-db.bash ovnsb-db.bash ovn-northd.bash ovn-central-common.inc /root/
-COPY ovn-cni.conf /etc/
+COPY entrypoint.bash install-cni.bash kubeapi.bash common-api.bash init-node.bash watcher.bash ovsdb.bash ovs-vswitchd.bash ovn-controller.bash ovs-common.inc ovnnb-db.bash ovnsb-db.bash ovn-northd.bash ovn-central-common.inc /root/
 
 WORKDIR /root
 ENTRYPOINT /root/entrypoint.bash

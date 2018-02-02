@@ -3,7 +3,7 @@ package cluster
 import (
 	"fmt"
 	"net"
-	"net/url"
+	//"net/url"
 	"os/exec"
 
 	"github.com/Sirupsen/logrus"
@@ -108,10 +108,10 @@ func setDBServerAuth(ctlCmd, desc string, auth *OvnDBAuth) error {
 // SetupMaster calls the external script to create the switch and central routers for the network
 func (cluster *OvnClusterController) SetupMaster(masterNodeName string, masterSwitchNetwork string) error {
 
-	kubeURL, err := url.Parse(cluster.KubeServer)
-	if err != nil {
-		return fmt.Errorf("error parsing k8s server %q: %v", cluster.KubeServer, err)
-	}
+	//kubeURL, err := url.Parse(cluster.KubeServer)
+	//if err != nil {
+	//	return fmt.Errorf("error parsing k8s server %q: %v", cluster.KubeServer, err)
+	//}
 
 	// Set up north/southbound API authentication
 	/*err = setDBServerAuth("ovn-nbctl", "northbound", cluster.NorthDBServerAuth)
@@ -133,7 +133,7 @@ func (cluster *OvnClusterController) SetupMaster(masterNodeName string, masterSw
 		"set",
 		"Open_vSwitch",
 		".",
-		fmt.Sprintf("external_ids:k8s-api-server=\"%s\"", kubeURL.Host),
+		fmt.Sprintf("external_ids:k8s-api-server=\"%s\"", cluster.KubeServer),
 		fmt.Sprintf("external_ids:k8s-api-token=\"%s\"", cluster.Token),
 	}
 	/*if cluster.NorthDBClientAuth.scheme != OvnDBSchemeUnix {

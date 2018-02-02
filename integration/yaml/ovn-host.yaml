@@ -51,8 +51,12 @@ spec:
             add: ["NET_ADMIN"]
         command: ["/root/ovn-controller.bash"]
         volumeMounts:
+          - mountPath: /var/lib/kubelet
+            name: kubelet
           - mountPath: /var/run/openvswitch
             name: ovs-run
+          - mountPath: /etc/openvswitch
+            name: ovs-conf
       volumes:
       - name: kubelet
         hostPath:

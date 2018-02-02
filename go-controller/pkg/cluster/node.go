@@ -67,10 +67,10 @@ func (cluster *OvnClusterController) StartClusterNode(name string) error {
 
 	logrus.Infof("Node %s ready for ovn initialization with subnet %s", node.Name, subnet.String())
 
-	err = util.StartOVS()
-	if err != nil {
-		return err
-	}
+	//err = util.StartOVS()
+	//if err != nil {
+	//	return err
+	//}
 
 	args := []string{
 		"set",
